@@ -1,3 +1,0 @@
-KEYGENにおいてDIG=H(Y)を計算
-SIGNでH(m,DIG)を計算
-VERFでH(m,H(Y))を計算
