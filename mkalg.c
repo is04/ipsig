@@ -4,17 +4,19 @@
 #include <sys/time.h>
 #include <openssl/sha.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "define_IP2S.h"
 #include "func_pivot_gauss_jordan.h"
 #include "functions_NLEN_NNMAT.h"
 #include "functions_MLEN_MMMAT.h"
+#include "functions_LLEN.h"
 #include "functions_NNMATxM.h"
 
 unsigned char LoadKeys(NNMATRIXxM *G){
   FILE *fp;
   int i,j,k;
-  if((fp=fopen("pkG.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/pkG.bin","rb"))==NULL){
     printf("File pkG.bin can't open as readable.\n");
     return 1;
   }
@@ -59,7 +61,7 @@ int main(){
     MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[i]),&(L[i]),G,&(R[i]));
   }
 
-  if((fp=fopen("alR.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/alR.bin","wb"))==NULL){
     printf("File alR.bin can't open as writable.\n");
     free(R);
     free(L);
@@ -78,7 +80,7 @@ int main(){
   }
   fclose(fp);
   
-  if((fp=fopen("alL.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/alL.bin","wb"))==NULL){
     printf("File alL.bin can't open as writable.\n");
     free(R);
     free(L);
@@ -97,7 +99,7 @@ int main(){
   }
   fclose(fp);
 
-  if((fp=fopen("alY.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/alY.bin","wb"))==NULL){
     printf("File alY.bin can't open as writable.\n");
     free(R);
     free(L);

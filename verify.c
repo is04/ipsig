@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <openssl/sha.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "define_IP2S.h"
 #include "func_pivot_gauss_jordan.h"
@@ -15,7 +16,7 @@
 int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAIR *Z){
   FILE *fp;
   int i,j,k;
-  if((fp=fopen("Msg.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/Msg.bin","rb"))==NULL){
     printf("File Msg.bin can't open as readable.\n");
     return 1;
   }
@@ -26,7 +27,7 @@ int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAI
   fclose(fp);
 
   //seed->matrix
-  if((fp=fopen("pkF.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/pkF.bin","rb"))==NULL){
     printf("File pkF.bin can't open as readable.\n");
     return 1;
   }
@@ -41,7 +42,7 @@ int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAI
   NNMATRIXxMtoTRANSPOSE(F);
   fclose(fp);
 
-  if((fp=fopen("pkG.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/pkG.bin","rb"))==NULL){
     printf("File pkG.bin can't open as readable.\n");
     return 1;
   }
@@ -56,7 +57,7 @@ int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAI
   NNMATRIXxMtoTRANSPOSE(G);
   fclose(fp);
   
-  if((fp=fopen("sgb.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/sgb.bin","rb"))==NULL){
     printf("File sgb.bin can't open as readable.\n");
     return 1;
   }
@@ -67,7 +68,7 @@ int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAI
   fclose(fp);
 
   //seed&matrix->matrix
-  if((fp=fopen("sgZ.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/sgZ.bin","rb"))==NULL){
     printf("File sgZ.bin can't open as readable.\n");
     return 1;
   }

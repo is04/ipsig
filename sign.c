@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <openssl/sha.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "define_IP2S.h"
 #include "func_pivot_gauss_jordan.h"
@@ -15,7 +16,7 @@
 int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Message,NNMATRIX *R,MMMATRIX *L,NNMATRIXxM *Y){
   FILE *fp;
   int i,j,k,l;
-  if((fp=fopen("Msg.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/Msg.bin","rb"))==NULL){
     printf("File Msg.bin can't open as readable.\n");
     return 1;
   }
@@ -26,7 +27,7 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   fclose(fp);
 
   //80bit->matrix
-  if((fp=fopen("pkF.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/pkF.bin","rb"))==NULL){
     printf("File pkF.bin can't open as readable.\n");
     return 1;
   }
@@ -41,7 +42,7 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   NNMATRIXxMtoTRANSPOSE(F);
   fclose(fp);
   
-  if((fp=fopen("pkG.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/pkG.bin","rb"))==NULL){
     printf("File pkG.bin can't open as readable.\n");
     return 1;
   }
@@ -57,7 +58,7 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   fclose(fp);
 
   //80bit->matrix
-  if((fp=fopen("skS.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/skS.bin","rb"))==NULL){
     printf("File skS.bin can't open as readable.\n");
     return 1;
   }
@@ -71,7 +72,7 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   fclose(fp);
 
   //80bit->matrix
-  if((fp=fopen("skT.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/skT.bin","rb"))==NULL){
     printf("File skT.bin can't open as readable.\n");
     return 1;
   }
@@ -85,7 +86,7 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   fclose(fp);
 
   //80bit->matrix
-  if((fp=fopen("alR.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/alR.bin","rb"))==NULL){
     printf("File alR.bin can't open as readable.\n");
     return 1;
   }
@@ -101,7 +102,7 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   fclose(fp);
 
   //80bit->matrix
-  if((fp=fopen("alL.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/alL.bin","rb"))==NULL){
     printf("File alL.bin can't open as readable.\n");
     return 1;
   }
@@ -116,7 +117,7 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   }
   fclose(fp);
 
-  if((fp=fopen("alY.bin","rb"))==NULL){
+  if((fp=fopen("./KEYS/alY.bin","rb"))==NULL){
     printf("File alY.bin can't open as readable.\n");
     return 1;
   }
@@ -194,7 +195,7 @@ int main(){
   
   //ここでbを出力
   FILE *fp;
-  if((fp=fopen("sgb.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/sgb.bin","wb"))==NULL){
     printf("File sgb.bin can't open as writable.\n");
     free(r);
     
@@ -231,7 +232,7 @@ int main(){
   
   //Zを出力
   //seedとmatrixが混合
-  if((fp=fopen("sgZ.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/sgZ.bin","wb"))==NULL){
     printf("File sgZ.bin can't open as writable.\n");
     free(r);
     

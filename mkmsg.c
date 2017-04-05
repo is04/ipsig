@@ -4,11 +4,13 @@
 #include <sys/time.h>
 #include <openssl/sha.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "define_IP2S.h"
 #include "func_pivot_gauss_jordan.h"
 #include "functions_NLEN_NNMAT.h"
 #include "functions_MLEN_MMMAT.h"
+#include "functions_LLEN.h"
 #include "functions_NNMATxM.h"
 
 int main(){
@@ -25,7 +27,7 @@ int main(){
   FILE *fp;
   int i;
   
-  if((fp=fopen("Msg.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/Msg.bin","wb"))==NULL){
     printf("File Msg.bin can't open as writable.\n");
     free(r);
     free(Message);

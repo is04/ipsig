@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <openssl/sha.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "define_IP2S.h"
 #include "func_pivot_gauss_jordan.h"
@@ -12,6 +13,18 @@
 #include "functions_NNMATxM.h"
 
 int main(){
+  struct stat stat_buf;
+  if(0 == stat("./KEYS", &stat_buf)){
+    if(system("rm -rf ./KEYS") == -1){
+      return 1;
+    }
+  }
+  
+  mkdir("./KEYS",
+	S_IRUSR | S_IWUSR | S_IXUSR |
+	S_IRGRP | S_IWGRP | S_IXGRP |
+	S_IROTH | S_IWOTH | S_IXOTH);
+
   struct timeval tv;
   gettimeofday(&tv,NULL);
   gsl_rng *r;
@@ -19,12 +32,15 @@ int main(){
   r=gsl_rng_alloc(gsl_rng_default);
   gsl_rng_set(r,tv.tv_sec+tv.tv_usec);
 
+  char BUFFER[256];
+    
   NLENBITS *Message=(NLENBITS*)malloc(sizeof(NLENBITS));
   NNMATRIX *S=(NNMATRIX*)malloc(sizeof(NNMATRIX));
   MMMATRIX *T=(MMMATRIX*)malloc(sizeof(MMMATRIX));
   NNMATRIXxM *F=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
   NNMATRIXxM *G=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
 
+  
   randomNLENBITS(Message,r);
 
   randomNNMATRIX(S,r);
@@ -39,7 +55,7 @@ int main(){
   FILE *fp;
   int i,j,k,l;
   
-  if((fp=fopen("Msg.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/Msg.bin","wb"))==NULL){
     printf("File Msg.bin can't open as writable.\n");
     free(r);
     
@@ -56,8 +72,7 @@ int main(){
   }
   fclose(fp);
 
-  //
-  if((fp=fopen("pkF.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/pkF.bin","wb"))==NULL){
     printf("File pkF.bin can't open as writable.\n");
     free(r);
     
@@ -78,7 +93,7 @@ int main(){
   }
   fclose(fp);
       
-  if((fp=fopen("pkG.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/pkG.bin","wb"))==NULL){
     printf("File pkG.bin can't open as writable.\n");
     free(r);
     
@@ -100,7 +115,7 @@ int main(){
   fclose(fp);
 
   //
-  if((fp=fopen("skS.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/skS.bin","wb"))==NULL){
     printf("File skS.bin can't open as writable.\n");
     free(r);
     
@@ -120,7 +135,7 @@ int main(){
   fclose(fp);
 
   //
-  if((fp=fopen("skT.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/skT.bin","wb"))==NULL){
     printf("File skT.bin can't open as writable.\n");
     free(r);
     
@@ -152,7 +167,7 @@ int main(){
   }
   
   //
-  if((fp=fopen("alR.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/alR.bin","wb"))==NULL){
     printf("File alR.bin can't open as writable.\n");
     free(R);
     free(L);
@@ -178,7 +193,7 @@ int main(){
   fclose(fp);
 
   //
-  if((fp=fopen("alL.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/alL.bin","wb"))==NULL){
     printf("File alL.bin can't open as writable.\n");
     free(R);
     free(L);
@@ -203,7 +218,7 @@ int main(){
   }
   fclose(fp);
 
-  if((fp=fopen("alY.bin","wb"))==NULL){
+  if((fp=fopen("./KEYS/alY.bin","wb"))==NULL){
     printf("File alY.bin can't open as writable.\n");
     free(R);
     free(L);
