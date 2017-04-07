@@ -307,3 +307,141 @@ void MMMATRIXpMMMATRIX(MMMATRIX *ans,MMMATRIX *nma,MMMATRIX *nmb){
   MMMATRIXtoTRANSPOSE(ans);
   return;
 }
+
+void HASHtoMMMATRIX(MMMATRIX *nm,unsigned char *seed,unsigned char *sha1,unsigned char *num,SHA_CTX *c){
+  int *i=(int*)malloc(sizeof(int));
+  unsigned int *tmp=(unsigned int*)malloc(sizeof(unsigned int));
+
+  for((*i)=0;(*i)<SEED_LEN;(*i)++){
+    sha1[*i]=sha1[*i]^seed[*i];
+  }
+
+  if((*num)<NUM_M){
+    SHA1_Init(c);
+    SHA1_Update(c,sha1,20);
+    SHA1_Final(sha1,c);
+    for((*i)=0;(*i)<4*INTS_M;(*i)++){
+      nm->Matrix[*num]._1byte[*i]._8bit=sha1[*i];
+    }
+    *tmp=~0;
+    *tmp=(*tmp)<<ZEROBITS_M;
+    nm->Matrix[*num]._4byte[INTS_M-1]=(nm->Matrix[*num]._4byte[INTS_M-1])&(*tmp);
+    (*num)++;
+    free(tmp);
+    free(i);
+    HASHtoMMMATRIX(nm,seed,sha1,num,c);
+  }
+  return;
+}
+
+unsigned char detMMMATRIX(MMMATRIX *nm){
+  unsigned char **MATRIX=(unsigned char**)malloc(sizeof(unsigned char*)*NUM_M);
+  int i,j,k,flag;
+  unsigned char res;
+  for(i=0;i<NUM_M;i++){
+    MATRIX[i]=(unsigned char*)malloc(sizeof(unsigned char)*NUM_M);
+  }
+
+  for(i=0;i<NUM_M;i++){
+    flag=0;
+    for(j=0;j<INTS_M;j++){
+      for(k=0;k<4;k++){
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit8;
+	  flag++;
+	}else{
+	  break;
+	}
+
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit7;
+	  flag++;
+	}else{
+	  break;
+	}
+
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit6;
+	  flag++;
+	}else{
+	  break;
+	}
+
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit5;
+	  flag++;
+	}else{
+	  break;
+	}
+
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit4;
+	  flag++;
+	}else{
+	  break;
+	}
+
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit3;
+	  flag++;
+	}else{
+	  break;
+	}
+	
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit2;
+	  flag++;
+	}else{
+	  break;
+	}
+	
+	if(flag<NUM_M){
+	  MATRIX[i][flag]=nm->Matrix[i]._1byte[4*j+3-k].bit1;
+	  flag++;
+	}else{
+	  break;
+	}
+      }
+    }
+  }
+
+  res=pivot_gauss_jordan_GF2(MATRIX,NUM_M);
+  /*
+  printf("det=%d\n",res);
+  for(i=0;i<NUM_M;i++){
+    for(j=0;j<NUM_M;j++){
+      printf("%d",MATRIX[i][j]);
+      if(j%8==7) printf(" ");
+    }
+    if(i%8==7) printf("\n");
+    printf("\n");
+  }
+  */
+  for(i=0;i<NUM_M;i++){
+    free(MATRIX[i]);
+  }
+  free(MATRIX);
+  return res;
+}
+
+unsigned char GenMMMATRIX(MMMATRIX *nm,unsigned char *seed){
+  int *i=(int*)malloc(sizeof(int));
+
+  unsigned char *sha1=(unsigned char*)malloc(sizeof(unsigned char)*20);
+  for((*i)=0;(*i)<20;(*i)++){
+    sha1[*i]=0;
+  }
+  free(i);
+  
+  unsigned char *num=(unsigned char*)malloc(sizeof(unsigned char));
+  *num=0;
+
+  SHA_CTX *c=(SHA_CTX*)malloc(sizeof(SHA_CTX));
+
+  HASHtoMMMATRIX(nm,seed,sha1,num,c);
+  MMMATRIXtoTRANSPOSE(nm);
+  free(sha1);
+  free(num);
+  free(c);
+  return detMMMATRIX(nm);
+}

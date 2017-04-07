@@ -438,7 +438,7 @@ unsigned char detNNMATRIX(NNMATRIX *nm){
   }
 
   res=pivot_gauss_jordan_GF2(MATRIX,NUM_N);
-
+  /*
   printf("det=%d\n",res);
   for(i=0;i<NUM_N;i++){
     for(j=0;j<NUM_N;j++){
@@ -448,7 +448,7 @@ unsigned char detNNMATRIX(NNMATRIX *nm){
     if(i%8==7) printf("\n");
     printf("\n");
   }
-  
+  */
   for(i=0;i<NUM_N;i++){
     free(MATRIX[i]);
   }

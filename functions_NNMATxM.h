@@ -63,7 +63,6 @@ void quadraticNNMATRIXxMcompression(NNMATRIXxM *nmxm){
   return;
 }
 
-//ここアウト?
 void NNMATRIXxMoNNMATRIX(NNMATRIXxM *ans,NNMATRIXxM *nmxm,NNMATRIX *nm){
   int i;
   for(i=0;i<NUM_M;i++){
