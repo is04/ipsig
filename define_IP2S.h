@@ -1,4 +1,4 @@
-#define NUM_N 96
+#define NUM_N 90
 #define NUM_M 85
 #define NUM_L 80
 #define SEED_BITLEN 80
