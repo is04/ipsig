@@ -37,6 +37,7 @@ int main(){
   GenNNMATRIXxM(nmxm,seed);
   printMMMATRIX(nm);
   printNNMATRIXxM(nmxm);
+  
   free(r);
   free(nm);
   free(nmxm);
