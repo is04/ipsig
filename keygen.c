@@ -218,6 +218,7 @@ int main(){
   }
   fclose(fp);
 
+  //Hash Y
   if((fp=fopen("./KEYS/alY.bin","wb"))==NULL){
     printf("File alY.bin can't open as writable.\n");
     free(R);
