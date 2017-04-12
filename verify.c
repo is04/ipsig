@@ -26,7 +26,6 @@ int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAI
   }
   fclose(fp);
 
-  //seed->matrix
   if((fp=fopen("./KEYS/pkF.bin","rb"))==NULL){
     printf("File pkF.bin can't open as readable.\n");
     return 1;
@@ -67,7 +66,6 @@ int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAI
   }
   fclose(fp);
 
-  //seed&matrix->matrix
   if((fp=fopen("./KEYS/sgZ.bin","rb"))==NULL){
     printf("File sgZ.bin can't open as readable.\n");
     return 1;
@@ -149,11 +147,6 @@ int main(){
   tmp=tmp<<ZEROBITS_L;
   LBTMP._4byte[INTS_L-1]=(LBTMP._4byte[INTS_L-1])&tmp;
 
-  //printf("result\n");
-  //printf(" sgb  : ");
-  //printLLENBITS(b);
-  //printf("hashb : ");
-  //printLLENBITS(&LBTMP);
   if(chkeqLLENBITS(b,&(LBTMP))){
     printf("Verify OK!\n");
   }else{

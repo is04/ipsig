@@ -26,7 +26,6 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   }
   fclose(fp);
 
-  //80bit->matrix
   if((fp=fopen("./KEYS/pkF.bin","rb"))==NULL){
     printf("File pkF.bin can't open as readable.\n");
     return 1;
@@ -57,7 +56,6 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   NNMATRIXxMtoTRANSPOSE(G);
   fclose(fp);
 
-  //80bit->matrix
   if((fp=fopen("./KEYS/skS.bin","rb"))==NULL){
     printf("File skS.bin can't open as readable.\n");
     return 1;
@@ -71,7 +69,6 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   NNMATRIXtoTRANSPOSE(S);
   fclose(fp);
 
-  //80bit->matrix
   if((fp=fopen("./KEYS/skT.bin","rb"))==NULL){
     printf("File skT.bin can't open as readable.\n");
     return 1;
@@ -85,7 +82,6 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   MMMATRIXtoTRANSPOSE(T);  
   fclose(fp);
 
-  //80bit->matrix
   if((fp=fopen("./KEYS/alR.bin","rb"))==NULL){
     printf("File alR.bin can't open as readable.\n");
     return 1;
@@ -101,7 +97,6 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
   }
   fclose(fp);
 
-  //80bit->matrix
   if((fp=fopen("./KEYS/alL.bin","rb"))==NULL){
     printf("File alL.bin can't open as readable.\n");
     return 1;
@@ -193,7 +188,6 @@ int main(){
   tmp=tmp<<ZEROBITS_L;
   b->_4byte[INTS_L-1]=(b->_4byte[INTS_L-1])&tmp;
   
-  //ここでbを出力
   FILE *fp;
   if((fp=fopen("./KEYS/sgb.bin","wb"))==NULL){
     printf("File sgb.bin can't open as writable.\n");
@@ -224,14 +218,12 @@ int main(){
       Z[i].NN=NNTMP;
       Z[i].MM=MMTMP;
     }else{
-      Z[i].NN=R[i];//seed
-      Z[i].MM=L[i];//seed
+      Z[i].NN=R[i];
+      Z[i].MM=L[i];
     }
     leftshiftLLENBITS(b);
   }
   
-  //Zを出力
-  //seedとmatrixが混合
   if((fp=fopen("./KEYS/sgZ.bin","wb"))==NULL){
     printf("File sgZ.bin can't open as writable.\n");
     free(r);

@@ -42,11 +42,8 @@ int main(){
   randomNLENBITS(Message,r);
 
   randomNNMATRIX(S,r);
-  //
   randomMMMATRIX(T,r);
-  //
   randomF(F,r);
-  //
   
   MMMATRIXoNNMATRIXxMoNNMATRIX(G,T,F,S);
   
@@ -112,7 +109,6 @@ int main(){
   }
   fclose(fp);
 
-  //
   if((fp=fopen("./KEYS/skS.bin","wb"))==NULL){
     printf("File skS.bin can't open as writable.\n");
     free(r);
@@ -132,7 +128,6 @@ int main(){
   }
   fclose(fp);
 
-  //
   if((fp=fopen("./KEYS/skT.bin","wb"))==NULL){
     printf("File skT.bin can't open as writable.\n");
     free(r);
@@ -158,13 +153,10 @@ int main(){
 
   for(i=0;i<NUM_L;i++){
     randomNNMATRIX(&(R[i]),r);
-    //
     randomMMMATRIX(&(L[i]),r);
-    //
     MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[i]),&(L[i]),G,&(R[i]));
   }
   
-  //
   if((fp=fopen("./KEYS/alR.bin","wb"))==NULL){
     printf("File alR.bin can't open as writable.\n");
     free(R);
@@ -190,7 +182,6 @@ int main(){
   }
   fclose(fp);
 
-  //
   if((fp=fopen("./KEYS/alL.bin","wb"))==NULL){
     printf("File alL.bin can't open as writable.\n");
     free(R);
