@@ -32,29 +32,23 @@ int main(){
   r=gsl_rng_alloc(gsl_rng_default);
   gsl_rng_set(r,tv.tv_sec+tv.tv_usec);
 
-  char BUFFER[256];
-    
   NLENBITS *Message=(NLENBITS*)malloc(sizeof(NLENBITS));
-  NNMATRIX *S=(NNMATRIX*)malloc(sizeof(NNMATRIX));
-  MMMATRIX *T=(MMMATRIX*)malloc(sizeof(MMMATRIX));
-  NNMATRIXxM *F=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
-  NNMATRIXxM *G=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
-
-  
   randomNLENBITS(Message,r);
 
+  NNMATRIX *S=(NNMATRIX*)malloc(sizeof(NNMATRIX));
   randomNNMATRIX(S,r);
-  //
+
+  MMMATRIX *T=(MMMATRIX*)malloc(sizeof(MMMATRIX));
   randomMMMATRIX(T,r);
-  //
+
+  NNMATRIXxM *F=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
   randomF(F,r);
-  //
-  
+
+  NNMATRIXxM *G=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
   MMMATRIXoNNMATRIXxMoNNMATRIX(G,T,F,S);
-  
+
   FILE *fp;
-  int i,j,k,l;
-  
+  int i,j,k;
   if((fp=fopen("./KEYS/Msg.bin","wb"))==NULL){
     printf("File Msg.bin can't open as writable.\n");
     free(r);
@@ -71,12 +65,12 @@ int main(){
     fputc(Message->_1byte[k]._8bit,fp);
   }
   fclose(fp);
-
+  free(Message);
+  
   if((fp=fopen("./KEYS/pkF.bin","wb"))==NULL){
     printf("File pkF.bin can't open as writable.\n");
     free(r);
     
-    free(Message);
     free(S);
     free(T);
     free(F);
@@ -92,15 +86,14 @@ int main(){
     }
   }
   fclose(fp);
-      
+  free(F);
+  
   if((fp=fopen("./KEYS/pkG.bin","wb"))==NULL){
     printf("File pkG.bin can't open as writable.\n");
     free(r);
     
-    free(Message);
     free(S);
     free(T);
-    free(F);
     free(G);
     return 1;
   }
@@ -114,15 +107,12 @@ int main(){
   }
   fclose(fp);
 
-  //
   if((fp=fopen("./KEYS/skS.bin","wb"))==NULL){
     printf("File skS.bin can't open as writable.\n");
     free(r);
     
-    free(Message);
     free(S);
     free(T);
-    free(F);
     free(G);
     return 1;
   }
@@ -133,53 +123,42 @@ int main(){
     }
   }
   fclose(fp);
-
-  //
+  free(S);
+  
   if((fp=fopen("./KEYS/skT.bin","wb"))==NULL){
     printf("File skT.bin can't open as writable.\n");
     free(r);
     
-    free(Message);
-    free(S);
     free(T);
-    free(F);
     free(G);
     return 1;
   }
-
+  
   for(j=0;j<NUM_M;j++){
     for(k=0;k<4*INTS_M;k++){
       fputc(T->Matrix[j]._1byte[k]._8bit,fp);
     }
   }
   fclose(fp);
-  
+  free(T);
+
   NNMATRIX *R=(NNMATRIX*)malloc(sizeof(NNMATRIX)*NUM_L);
   MMMATRIX *L=(MMMATRIX*)malloc(sizeof(MMMATRIX)*NUM_L);
   NNMATRIXxM *Y=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM)*NUM_L);
 
   for(i=0;i<NUM_L;i++){
     randomNNMATRIX(&(R[i]),r);
-    //
     randomMMMATRIX(&(L[i]),r);
-    //
     MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[i]),&(L[i]),G,&(R[i]));
   }
+  free(G);
+  free(r);
   
-  //
   if((fp=fopen("./KEYS/alR.bin","wb"))==NULL){
     printf("File alR.bin can't open as writable.\n");
     free(R);
     free(L);
     free(Y);
-    
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
     return 1;
   }
   
@@ -191,21 +170,12 @@ int main(){
     }
   }
   fclose(fp);
-
-  //
+  free(R);
+  
   if((fp=fopen("./KEYS/alL.bin","wb"))==NULL){
     printf("File alL.bin can't open as writable.\n");
-    free(R);
     free(L);
     free(Y);
-    
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
     return 1;
   }
   
@@ -217,45 +187,24 @@ int main(){
     }
   }
   fclose(fp);
-
+  free(L);
+  
   //Hash Y
+  unsigned char sha1_Y[20];  
+  SHA_CTX c;
+  SHA1_Init(&c);
+  SHA1_Update(&c,Y,4*INTS_N*NUM_N*2*NUM_M*NUM_L);
+  SHA1_Final(sha1_Y,&c);
+  free(Y);
+  
   if((fp=fopen("./KEYS/alY.bin","wb"))==NULL){
     printf("File alY.bin can't open as writable.\n");
-    free(R);
-    free(L);
-    free(Y);
-    
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
     return 1;
   }
   
-  for(i=0;i<NUM_L;i++){
-    for(j=0;j<NUM_M;j++){
-      for(k=0;k<NUM_N;k++){
-	for(l=0;l<4*INTS_N;l++){
-	  fputc(Y[i].No[j].Matrix[k]._1byte[l]._8bit,fp);
-	}
-      }
-    }
+  for(i=0;i<20;i++){
+    fputc(sha1_Y[i],fp);
   }
   fclose(fp);
-  
-  free(R);
-  free(L);
-  free(Y);
-
-  free(r);
-
-  free(Message);
-  free(S);
-  free(T);
-  free(F);
-  free(G);
   return 0;
 }

@@ -53,7 +53,7 @@ int main(){
   NNMATRIXxM *Y=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM)*NUM_L);
 
   FILE *fp;
-  int i,j,k,l;
+  int i,j,k;
   
   for(i=0;i<NUM_L;i++){
     randomNNMATRIX(&(R[i]),r);
@@ -99,29 +99,29 @@ int main(){
   }
   fclose(fp);
 
+  //Hash Y
+  unsigned char sha1_Y[20];  
+  SHA_CTX c;
+  SHA1_Init(&c);
+  SHA1_Update(&c,Y,4*INTS_N*NUM_N*2*NUM_M*NUM_L);
+  SHA1_Final(sha1_Y,&c);
+  free(Y);
+
   if((fp=fopen("./KEYS/alY.bin","wb"))==NULL){
     printf("File alY.bin can't open as writable.\n");
     free(R);
     free(L);
-    free(Y);
     free(r);
     free(G);
     return 1;
   }
   
-  for(i=0;i<NUM_L;i++){
-    for(j=0;j<NUM_M;j++){
-      for(k=0;k<NUM_N;k++){
-	for(l=0;l<4*INTS_N;l++){
-	  fputc(Y[i].No[j].Matrix[k]._1byte[l]._8bit,fp);
-	}
-      }
-    }
+  for(i=0;i<20;i++){
+    fputc(sha1_Y[i],fp);
   }
   fclose(fp);
 
   free(r);
-  free(Y);
   free(R);
   free(L);
   free(G);

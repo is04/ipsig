@@ -136,10 +136,15 @@ int main(){
   }    
 
   SHA_CTX c;
+  unsigned char sha1_Y[20];
+  SHA1_Init(&c);
+  SHA1_Update(&c,Y,4*INTS_N*NUM_N*2*NUM_M*NUM_L);
+  SHA1_Final(sha1_Y,&c);
+  
   unsigned char sha1[20];
   SHA1_Init(&c);
   SHA1_Update(&c,Message,4*INTS_N);
-  SHA1_Update(&c,Y,4*INTS_N*NUM_N*2*NUM_M*NUM_L);
+  SHA1_Update(&c,sha1_Y,20);
   SHA1_Final(sha1,&c);
   
   for(i=0;i<4*INTS_L;i++){
@@ -149,11 +154,6 @@ int main(){
   tmp=tmp<<ZEROBITS_L;
   LBTMP._4byte[INTS_L-1]=(LBTMP._4byte[INTS_L-1])&tmp;
 
-  //printf("result\n");
-  //printf(" sgb  : ");
-  //printLLENBITS(b);
-  //printf("hashb : ");
-  //printLLENBITS(&LBTMP);
   if(chkeqLLENBITS(b,&(LBTMP))){
     printf("Verify OK!\n");
   }else{

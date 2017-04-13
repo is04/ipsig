@@ -13,9 +13,9 @@
 #include "functions_LLEN.h"
 #include "functions_NNMATxM.h"
 
-int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Message,NNMATRIX *R,MMMATRIX *L,NNMATRIXxM *Y){
+int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Message,NNMATRIX *R,MMMATRIX *L,unsigned char *sha1_Y){
   FILE *fp;
-  int i,j,k,l;
+  int i,j,k;
   if((fp=fopen("./KEYS/Msg.bin","rb"))==NULL){
     printf("File Msg.bin can't open as readable.\n");
     return 1;
@@ -122,15 +122,8 @@ int LoadKeys(NNMATRIXxM *G,MMMATRIX *T,NNMATRIXxM *F,NNMATRIX *S,NLENBITS *Messa
     return 1;
   }
   
-  for(i=0;i<NUM_L;i++){
-    for(j=0;j<NUM_M;j++){
-      for(k=0;k<NUM_N;k++){
-	for(l=0;l<4*INTS_N;l++){
-	  Y[i].No[j].Matrix[k]._1byte[l]._8bit=fgetc(fp);
-	}
-      }
-    }
-    NNMATRIXxMtoTRANSPOSE(&(Y[i]));
+  for(i=0;i<20;i++){
+    sha1_Y[i]=fgetc(fp);
   }
   fclose(fp);
 
@@ -154,9 +147,9 @@ int main(){
 
   NNMATRIX *R=(NNMATRIX*)malloc(sizeof(NNMATRIX)*NUM_L);
   MMMATRIX *L=(MMMATRIX*)malloc(sizeof(MMMATRIX)*NUM_L);
-  NNMATRIXxM *Y=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM)*NUM_L);
+  unsigned char *sha1_Y=(unsigned char*)malloc(20*sizeof(unsigned char));
 
-  if(LoadKeys(G,T,F,S,Message,R,L,Y)==1){
+  if(LoadKeys(G,T,F,S,Message,R,L,sha1_Y)==1){
     free(r);
     free(Message);
     free(S);
@@ -165,7 +158,7 @@ int main(){
     free(G);
     free(R);
     free(L);
-    free(Y);
+    free(sha1_Y);
     return 1;
   }
 
@@ -183,7 +176,7 @@ int main(){
   unsigned char sha1[20];
   SHA1_Init(&c1);
   SHA1_Update(&c1,Message,4*INTS_N);
-  SHA1_Update(&c1,Y,4*INTS_N*NUM_N*2*NUM_M*NUM_L);
+  SHA1_Update(&c1,sha1_Y,20);
   SHA1_Final(sha1,&c1);
 
   for(i=0;i<4*INTS_L;i++){
@@ -208,7 +201,7 @@ int main(){
     free(b);
     free(R);
     free(L);
-    free(Y);
+    free(sha1_Y);
     free(Z);
     return 1;
   }
@@ -245,7 +238,7 @@ int main(){
     free(b);
     free(R);
     free(L);
-    free(Y);
+    free(sha1_Y);
     free(Z);
     return 1;
   }
@@ -275,7 +268,7 @@ int main(){
   free(b);
   free(R);
   free(L);
-  free(Y);
+  free(sha1_Y);
   free(Z);
   return 0;
 }
