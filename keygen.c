@@ -1,3 +1,4 @@
+//確実にfreeされているかを確かめていない
 #include <stdio.h>
 #include <stdlib.h>
 #include <gsl/gsl_rng.h>
@@ -32,74 +33,113 @@ int main(){
   r=gsl_rng_alloc(gsl_rng_default);
   gsl_rng_set(r,tv.tv_sec+tv.tv_usec);
 
-  NLENBITS *Message=(NLENBITS*)malloc(sizeof(NLENBITS));
-  NNMATRIX *S=(NNMATRIX*)malloc(sizeof(NNMATRIX));
-  MMMATRIX *T=(MMMATRIX*)malloc(sizeof(MMMATRIX));
-  NNMATRIXxM *F=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
-  NNMATRIXxM *G=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
+  char BUFFER[256];
+    
+  int i;
 
-  
+  FILE *fp;
+
+  NLENBITS *Message=(NLENBITS*)malloc(sizeof(NLENBITS));
   randomNLENBITS(Message,r);
 
-  randomNNMATRIX(S,r);
-  randomMMMATRIX(T,r);
-  randomF(F,r);
-  
-  MMMATRIXoNNMATRIXxMoNNMATRIX(G,T,F,S);
-  
-  FILE *fp;
-  int i,j,k,l;
-  
   if((fp=fopen("./KEYS/Msg.bin","wb"))==NULL){
     printf("File Msg.bin can't open as writable.\n");
+
     free(r);
-    
     free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
     return 1;
   }
 
-  for(k=0;k<4*INTS_N;k++){
-    fputc(Message->_1byte[k]._8bit,fp);
+  for(i=0;i<4*INTS_N;i++){
+    fputc(Message->_1byte[i]._8bit,fp);
+  }
+  fclose(fp);
+  free(Message);
+  
+  NNMATRIX *S=(NNMATRIX*)malloc(sizeof(NNMATRIX));
+  unsigned char *seed=(unsigned char*)malloc(sizeof(unsigned char)*SEED_LEN);
+  while(1){
+    for(i=0;i<SEED_LEN;i++){
+      seed[i]=gsl_rng_uniform_int(r,256);
+    }
+    if(GenNNMATRIX(S,seed)) break;
+  }
+  
+  if((fp=fopen("./KEYS/skS.bin","wb"))==NULL){
+    printf("File skS.bin can't open as writable.\n");
+
+    free(r);
+    free(S);
+    free(seed);
+    return 1;
+  }
+  
+  for(i=0;i<SEED_LEN;i++){
+    fputc(seed[i],fp);
+  }
+  fclose(fp);
+  
+  MMMATRIX *T=(MMMATRIX*)malloc(sizeof(MMMATRIX));
+  while(1){
+    for(i=0;i<SEED_LEN;i++){
+      seed[i]=gsl_rng_uniform_int(r,256);
+    }
+    if(GenMMMATRIX(T,seed)) break;
+  }
+  
+  if((fp=fopen("./KEYS/skT.bin","wb"))==NULL){
+    printf("File skT.bin can't open as writable.\n");
+
+    free(r);
+    free(S);
+    free(T);
+    free(seed);
+    return 1;
+  }
+  
+  for(i=0;i<SEED_LEN;i++){
+    fputc(seed[i],fp);
   }
   fclose(fp);
 
+  NNMATRIXxM *F=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
+  for(i=0;i<SEED_LEN;i++){
+    seed[i]=gsl_rng_uniform_int(r,256);
+  }
+  
+  GenNNMATRIXxM(F,seed);
+  
   if((fp=fopen("./KEYS/pkF.bin","wb"))==NULL){
     printf("File pkF.bin can't open as writable.\n");
+ 
     free(r);
-    
-    free(Message);
     free(S);
     free(T);
     free(F);
-    free(G);
+    free(seed);
     return 1;
   }
 
-  for(i=0;i<NUM_M;i++){
-    for(j=0;j<NUM_N;j++){
-      for(k=0;k<4*INTS_N;k++){
-	fputc(F->No[i].Matrix[j]._1byte[k]._8bit,fp);
-      }
-    }
+  for(i=0;i<SEED_LEN;i++){
+    fputc(seed[i],fp);
   }
   fclose(fp);
-      
+  
+  NNMATRIXxM *G=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
+  MMMATRIXoNNMATRIXxMoNNMATRIX(G,T,F,S);
+  
   if((fp=fopen("./KEYS/pkG.bin","wb"))==NULL){
     printf("File pkG.bin can't open as writable.\n");
-    free(r);
     
-    free(Message);
+    free(r);
     free(S);
     free(T);
     free(F);
     free(G);
     return 1;
   }
-
+  
+  int j,k,l;
   for(i=0;i<NUM_M;i++){
     for(j=0;j<NUM_N;j++){
       for(k=0;k<4*INTS_N;k++){
@@ -108,142 +148,108 @@ int main(){
     }
   }
   fclose(fp);
-
-  if((fp=fopen("./KEYS/skS.bin","wb"))==NULL){
-    printf("File skS.bin can't open as writable.\n");
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
-    return 1;
-  }
-  
-  for(j=0;j<NUM_N;j++){
-    for(k=0;k<4*INTS_N;k++){
-      fputc(S->Matrix[j]._1byte[k]._8bit,fp);
-    }
-  }
-  fclose(fp);
-
-  if((fp=fopen("./KEYS/skT.bin","wb"))==NULL){
-    printf("File skT.bin can't open as writable.\n");
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
-    return 1;
-  }
-
-  for(j=0;j<NUM_M;j++){
-    for(k=0;k<4*INTS_M;k++){
-      fputc(T->Matrix[j]._1byte[k]._8bit,fp);
-    }
-  }
-  fclose(fp);
-  
-  NNMATRIX *R=(NNMATRIX*)malloc(sizeof(NNMATRIX)*NUM_L);
-  MMMATRIX *L=(MMMATRIX*)malloc(sizeof(MMMATRIX)*NUM_L);
-  NNMATRIXxM *Y=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM)*NUM_L);
-
-  for(i=0;i<NUM_L;i++){
-    randomNNMATRIX(&(R[i]),r);
-    randomMMMATRIX(&(L[i]),r);
-    MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[i]),&(L[i]),G,&(R[i]));
-  }
-  
-  if((fp=fopen("./KEYS/alR.bin","wb"))==NULL){
-    printf("File alR.bin can't open as writable.\n");
-    free(R);
-    free(L);
-    free(Y);
-    
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
-    return 1;
-  }
-  
-  for(i=0;i<NUM_L;i++){
-    for(j=0;j<NUM_N;j++){
-      for(k=0;k<4*INTS_N;k++){
-	fputc(R[i].Matrix[j]._1byte[k]._8bit,fp);
-      }
-    }
-  }
-  fclose(fp);
-
-  if((fp=fopen("./KEYS/alL.bin","wb"))==NULL){
-    printf("File alL.bin can't open as writable.\n");
-    free(R);
-    free(L);
-    free(Y);
-    
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
-    return 1;
-  }
-  
-  for(i=0;i<NUM_L;i++){
-    for(j=0;j<NUM_M;j++){
-      for(k=0;k<4*INTS_M;k++){
-	fputc(L[i].Matrix[j]._1byte[k]._8bit,fp);
-      }
-    }
-  }
-  fclose(fp);
-
-  if((fp=fopen("./KEYS/alY.bin","wb"))==NULL){
-    printf("File alY.bin can't open as writable.\n");
-    free(R);
-    free(L);
-    free(Y);
-    
-    free(r);
-    
-    free(Message);
-    free(S);
-    free(T);
-    free(F);
-    free(G);
-    return 1;
-  }
-  
-  for(i=0;i<NUM_L;i++){
-    for(j=0;j<NUM_M;j++){
-      for(k=0;k<NUM_N;k++){
-	for(l=0;l<4*INTS_N;l++){
-	  fputc(Y[i].No[j].Matrix[k]._1byte[l]._8bit,fp);
-	}
-      }
-    }
-  }
-  fclose(fp);
-  
-  free(R);
-  free(L);
-  free(Y);
-
-  free(r);
-
-  free(Message);
   free(S);
   free(T);
   free(F);
+  
+  NNMATRIX *R=(NNMATRIX*)malloc(sizeof(NNMATRIX));
+  MMMATRIX *L=(MMMATRIX*)malloc(sizeof(MMMATRIX));
+  NNMATRIXxM *Y=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
+
+  unsigned char sha1_Y[20];
+  SHA_CTX c;
+  SHA1_Init(&c);
+  for(l=0;l<NUM_L;l++){
+    while(1){
+      for(i=0;i<SEED_LEN;i++){
+	seed[i]=gsl_rng_uniform_int(r,256);
+      }
+      if(GenNNMATRIX(R,seed)) break;
+    }
+    sprintf(BUFFER,"./KEYS/alR%05d.bin",l);
+    if((fp=fopen(BUFFER,"wb"))==NULL){
+      printf("File %s can't open as writable.\n",BUFFER);
+
+      free(r);
+      free(G);
+      free(R);
+      free(L);
+      free(Y);
+      free(seed);
+      return 1;
+    }
+    for(i=0;i<SEED_LEN;i++){
+      fputc(seed[i],fp);
+    }
+    fclose(fp);
+    
+    while(1){
+      for(i=0;i<SEED_LEN;i++){
+	seed[i]=gsl_rng_uniform_int(r,256);
+      }
+      if(GenMMMATRIX(L,seed)) break;
+    }
+    sprintf(BUFFER,"./KEYS/alL%05d.bin",l);
+    if((fp=fopen(BUFFER,"wb"))==NULL){
+      printf("File %s can't open as writable.\n",BUFFER);
+
+      free(r);
+      free(G);
+      free(R);
+      free(L);
+      free(Y);
+      free(seed);
+      return 1;
+    }
+    for(i=0;i<SEED_LEN;i++){
+      fputc(seed[i],fp);
+    }
+    fclose(fp);
+    
+    MMMATRIXoNNMATRIXxMoNNMATRIX(Y,L,G,R);
+    SHA1_Update(&c,Y,4*INTS_N*NUM_N*2*NUM_M);
+    /*
+    sprintf(BUFFER,"./KEYS/alY%05d.bin",l);
+    if((fp=fopen(BUFFER,"wb"))==NULL){
+      printf("File %s can't open as writable.\n",BUFFER);
+
+      free(r);
+      free(G);
+      free(R);
+      free(L);
+      free(Y);
+      free(seed);
+      return 1;
+    }
+    
+    for(i=0;i<NUM_M;i++){
+      for(j=0;j<NUM_N;j++){
+	for(k=0;k<4*INTS_N;k++){
+	  fputc(Y->No[i].Matrix[j]._1byte[k]._8bit,fp);
+	}
+      }
+    }
+    fclose(fp);
+    */
+  }
+  free(seed);
+  free(r);
   free(G);
+  free(R);
+  free(L);
+  
+  SHA1_Final(sha1_Y,&c);
+
+  free(Y);
+
+  if((fp=fopen("./KEYS/alY.bin","wb"))==NULL){
+    printf("File alY.bin can't open as writable.\n");
+    return 1;
+  }
+  
+  for(i=0;i<20;i++){
+    fputc(sha1_Y[i],fp);
+  }
+  fclose(fp);
   return 0;
 }

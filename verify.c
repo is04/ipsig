@@ -13,17 +13,27 @@
 #include "functions_LLEN.h"
 #include "functions_NNMATxM.h"
 
-int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAIR *Z){
+char LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,LLENBITS *b,unsigned char *seed){
   FILE *fp;
-  int i,j,k;
-  if((fp=fopen("./KEYS/Msg.bin","rb"))==NULL){
-    printf("File Msg.bin can't open as readable.\n");
+  int i;
+  int *j=(int*)malloc(sizeof(int));
+  int *k=(int*)malloc(sizeof(int));
+  
+  if((fp=fopen("./KEYS/pkG.bin","rb"))==NULL){
+    printf("File pkG.bin can't open as readable.\n");
     return 1;
   }
   
-  for(k=0;k<4*INTS_N;k++){
-    Message->_1byte[k]._8bit=fgetc(fp);
+  for(i=0;i<NUM_M;i++){
+    for((*j)=0;(*j)<NUM_N;(*j)++){
+      for((*k)=0;(*k)<4*INTS_N;(*k)++){
+	G->No[i].Matrix[*j]._1byte[*k]._8bit=fgetc(fp);
+      }
+    }
   }
+  free(j);
+  free(k);
+  NNMATRIXxMtoTRANSPOSE(G);
   fclose(fp);
 
   if((fp=fopen("./KEYS/pkF.bin","rb"))==NULL){
@@ -31,134 +41,194 @@ int LoadKeys(NNMATRIXxM *G,NNMATRIXxM *F,NLENBITS *Message,LLENBITS *b,MATRIXPAI
     return 1;
   }
   
-  for(i=0;i<NUM_M;i++){
-    for(j=0;j<NUM_N;j++){
-      for(k=0;k<4*INTS_N;k++){
-	F->No[i].Matrix[j]._1byte[k]._8bit=fgetc(fp);
-      }
-    }
+  for(i=0;i<SEED_LEN;i++){
+    seed[i]=fgetc(fp);
   }
-  NNMATRIXxMtoTRANSPOSE(F);
+  GenNNMATRIXxM(F,seed);
   fclose(fp);
 
-  if((fp=fopen("./KEYS/pkG.bin","rb"))==NULL){
-    printf("File pkG.bin can't open as readable.\n");
-    return 1;
-  }
-  
-  for(i=0;i<NUM_M;i++){
-    for(j=0;j<NUM_N;j++){
-      for(k=0;k<4*INTS_N;k++){
-	G->No[i].Matrix[j]._1byte[k]._8bit=fgetc(fp);
-      }
-    }
-  }
-  NNMATRIXxMtoTRANSPOSE(G);
-  fclose(fp);
-  
   if((fp=fopen("./KEYS/sgb.bin","rb"))==NULL){
     printf("File sgb.bin can't open as readable.\n");
     return 1;
   }
   
-  for(k=0;k<4*INTS_L;k++){
-    b->_1byte[k]._8bit=fgetc(fp);
+  for(i=0;i<4*INTS_L;i++){
+    b->_1byte[i]._8bit=fgetc(fp);
   }
   fclose(fp);
+  return 0;
+}
 
-  if((fp=fopen("./KEYS/sgZ.bin","rb"))==NULL){
-    printf("File sgZ.bin can't open as readable.\n");
+char LoadMsg(NLENBITS *Message){
+  FILE *fp;
+  int i;
+  if((fp=fopen("./KEYS/Msg.bin","rb"))==NULL){
+    printf("File Msg.bin can't open as readable.\n");
+    return 1;
+  }  
+  for(i=0;i<4*INTS_N;i++){
+    Message->_1byte[i]._8bit=fgetc(fp);
+  }
+  fclose(fp);
+  return 0;
+}
+
+char LoadZMatrix(NNMATRIX *Z0,MMMATRIX *Z1,int *num,char *BUFFER){
+  FILE *fp;
+  int i,j;
+  sprintf(BUFFER,"./KEYS/sgZ%05d-0.bin",*num);
+  if((fp=fopen(BUFFER,"rb"))==NULL){
+    printf("File %s can't open as readable.\n",BUFFER);
     return 1;
   }
-  
-  for(i=0;i<NUM_L;i++){
-    for(j=0;j<NUM_N;j++){
-      for(k=0;k<4*INTS_N;k++){
-	Z[i].NN.Matrix[j]._1byte[k]._8bit=fgetc(fp);
-      }
+  for(i=0;i<NUM_N;i++){
+    for(j=0;j<4*INTS_N;j++){
+      Z0->Matrix[i]._1byte[j]._8bit=fgetc(fp);
     }
-    NNMATRIXtoTRANSPOSE(&(Z[i].NN));
-    for(j=0;j<NUM_M;j++){
-      for(k=0;k<4*INTS_M;k++){
-	Z[i].MM.Matrix[j]._1byte[k]._8bit=fgetc(fp);
-      }
-    }
-    MMMATRIXtoTRANSPOSE(&(Z[i].MM));  
   }
+  NNMATRIXtoTRANSPOSE(Z0);
   fclose(fp);
   
+  sprintf(BUFFER,"./KEYS/sgZ%05d-1.bin",*num);
+  if((fp=fopen(BUFFER,"rb"))==NULL){
+    printf("File %s can't open as readable.\n",BUFFER);
+    return 1;
+  }
+  for(i=0;i<NUM_M;i++){
+    for(j=0;j<4*INTS_M;j++){
+      Z1->Matrix[i]._1byte[j]._8bit=fgetc(fp);
+    }
+  }
+  MMMATRIXtoTRANSPOSE(Z1);
+  fclose(fp);
+
+  return 0;
+}
+
+char LoadZSeed(NNMATRIX *Z0,MMMATRIX *Z1,unsigned char *seed,int *num,char *BUFFER){
+  FILE *fp;
+  int i;
+  sprintf(BUFFER,"./KEYS/sgZ%05d-0.bin",*num);
+  if((fp=fopen(BUFFER,"rb"))==NULL){
+    printf("File %s can't open as readable.\n",BUFFER);
+    return 1;
+  }
+  for(i=0;i<SEED_LEN;i++){
+    seed[i]=fgetc(fp);
+  }
+  GenNNMATRIX(Z0,seed);
+  fclose(fp);
+  
+  sprintf(BUFFER,"./KEYS/sgZ%05d-1.bin",*num);
+  if((fp=fopen(BUFFER,"rb"))==NULL){
+    printf("File %s can't open as readable.\n",BUFFER);
+    return 1;
+  }
+  for(i=0;i<SEED_LEN;i++){
+    seed[i]=fgetc(fp);
+  }
+  GenMMMATRIX(Z1,seed);
+  fclose(fp);
+
   return 0;
 }
 
 int main(){
-  struct timeval tv;
-  gettimeofday(&tv,NULL);
-  gsl_rng *r;
-  gsl_rng_env_setup();
-  r=gsl_rng_alloc(gsl_rng_default);
-  gsl_rng_set(r,tv.tv_sec+tv.tv_usec);
-
-  NLENBITS *Message=(NLENBITS*)malloc(sizeof(NLENBITS));
+  unsigned char *seed=(unsigned char*)malloc(SEED_LEN*sizeof(unsigned char));
   NNMATRIXxM *F=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
   NNMATRIXxM *G=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM));
-  
   LLENBITS *b=(LLENBITS*)malloc(sizeof(LLENBITS));
-  MATRIXPAIR *Z=(MATRIXPAIR*)malloc(sizeof(MATRIXPAIR)*NUM_L);
 
-  NNMATRIXxM *Y=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM)*NUM_L);
-  
-  unsigned int tmp;
-  
-  int i;
-
-  
-  if(LoadKeys(G,F,Message,b,Z)==1){
-    free(r);
-    free(Message);
+  if(LoadKeys(G,F,b,seed)){
+    free(seed);
     free(F);
     free(G);
     free(b);
-    free(Z);
     return 1;
   }
 
-  LLENBITS LBTMP=*b;
-
-  for(i=0;i<NUM_L;i++){
-    if(LBTMP._4byte[0]&(0x80000000)){
-      MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[i]),&(Z[i].MM),F,&(Z[i].NN));
-    }else{
-      MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[i]),&(Z[i].MM),G,&(Z[i].NN));
-    }
-    leftshiftLLENBITS(&LBTMP);
-  }    
-
-  SHA_CTX c;
-  unsigned char sha1[20];
-  SHA1_Init(&c);
-  SHA1_Update(&c,Message,4*INTS_N);
-  SHA1_Update(&c,Y,4*INTS_N*NUM_N*2*NUM_M*NUM_L);
-  SHA1_Final(sha1,&c);
+  int *i=(int*)malloc(sizeof(int));
+  NNMATRIXxM *Y=(NNMATRIXxM*)malloc(sizeof(NNMATRIXxM)*NUM_L);
+  NNMATRIX *Z0=(NNMATRIX*)malloc(sizeof(NNMATRIX));
+  MMMATRIX *Z1=(MMMATRIX*)malloc(sizeof(MMMATRIX));
+  char *BUFFER=(char*)malloc(sizeof(char)*256);
   
-  for(i=0;i<4*INTS_L;i++){
-    LBTMP._1byte[i]._8bit=sha1[i];
+  LLENBITS LBTMP=*b;
+  for((*i)=0;(*i)<NUM_L;(*i)++){
+    if(LBTMP._4byte[0]&(0x80000000)){
+      if(LoadZMatrix(Z0,Z1,i,BUFFER)){
+	free(seed);
+	free(F);
+	free(G);
+	free(b);
+	free(i);
+	free(Y);
+	free(Z0);
+	free(Z1);
+	free(BUFFER);
+	return 1;
+      }
+      MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[*i]),Z1,F,Z0);
+    }else{
+      if(LoadZSeed(Z0,Z1,seed,i,BUFFER)){
+	free(seed);
+	free(F);
+	free(G);
+	free(b);
+	free(i);
+	free(Y);
+	free(Z0);
+	free(Z1);
+	free(BUFFER);
+	return 1;
+      }
+      MMMATRIXoNNMATRIXxMoNNMATRIX(&(Y[*i]),Z1,G,Z0);
+    }
+    leftshiftLLENBITS(&(LBTMP));
   }
-  tmp=~0;
-  tmp=tmp<<ZEROBITS_L;
-  LBTMP._4byte[INTS_L-1]=(LBTMP._4byte[INTS_L-1])&tmp;
 
+  free(BUFFER);
+  free(Z0);
+  free(Z1); 
+  free(F);
+  free(G);
+  free(seed);
+  
+  NLENBITS *Message=(NLENBITS*)malloc(sizeof(NLENBITS));
+  if(LoadMsg(Message)){
+    free(Message);
+    free(Y);
+    free(i);
+    free(b);
+  }
+  
+  SHA_CTX c1;
+  unsigned char sha1_Y[20];
+  SHA1_Init(&c1);
+  SHA1_Update(&c1,Y,4*INTS_N*NUM_N*2*NUM_M*NUM_L);
+  SHA1_Final(sha1_Y,&c1);
+    
+  SHA_CTX c2;
+  unsigned char sha1[20];
+  SHA1_Init(&c2);
+  SHA1_Update(&c2,Message,4*INTS_N);
+  SHA1_Update(&c2,sha1_Y,20);
+  SHA1_Final(sha1,&c2);
+  
+  for((*i)=0;(*i)<4*INTS_L;(*i)++){
+    LBTMP._1byte[*i]._8bit=sha1[*i];
+  }
+  LBTMP._4byte[INTS_L-1]=(LBTMP._4byte[INTS_L-1])&(0xFFFFFFFF<<ZEROBITS_L);
+  free(i);
+  
   if(chkeqLLENBITS(b,&(LBTMP))){
     printf("Verify OK!\n");
   }else{
     printf("Verify NG!\n");
   }
 
-  free(r);
   free(Message);
-  free(F);
-  free(G);
   free(b);
   free(Y);
-  free(Z);
   return 0;
 }
